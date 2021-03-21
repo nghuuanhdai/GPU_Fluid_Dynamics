@@ -52,6 +52,7 @@
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
                 fixed4 input = tex2D(_Input, i.uv);
+                return alphaBlend(col, input);
                 fixed4 reversedInput = 1 - input;
                 reversedInput.a = input.a;
                 return alphaBlend(col, lerp(input, reversedInput, (sin(_Time.z) + 1)/2));

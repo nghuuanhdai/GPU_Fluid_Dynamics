@@ -30,6 +30,7 @@ public class FluidSimulation : MonoBehaviour
     [SerializeField] private int diffusionIteration = 20;
     [SerializeField] private int computePressureIteration = 40;
     [SerializeField] private float qtyCarryFactory = 0.5f;
+    [SerializeField] private float velocityAdvectionFactor = 0.5f;
 
     private RenderTexture qty;
     private RenderTexture u;
@@ -41,6 +42,7 @@ public class FluidSimulation : MonoBehaviour
     private RenderTexture pressureDivergenceTemp;
 
     private Material qtyInputMaterial;
+    private Material velocityAdvectionMaterial;
     private Material advectionMaterial;
     private Material diffuseMaterial;
     private Material forceMaterial;
@@ -61,6 +63,7 @@ public class FluidSimulation : MonoBehaviour
         pressureDivergenceTemp = new RenderTexture(simulationSize.x, simulationSize.y, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
 
         qtyInputMaterial = new Material(qtyInput);
+        velocityAdvectionMaterial = new Material(advection);
         advectionMaterial = new Material(advection);
         diffuseMaterial = new Material(diffuse);
         forceMaterial = new Material(force);
@@ -69,6 +72,8 @@ public class FluidSimulation : MonoBehaviour
         substractPressureGradientMaterial = new Material(substractPresureGradient);
 
         qtyInputMaterial.SetTexture("_Input", externalForceColor);
+        velocityAdvectionMaterial.SetTexture("_U", u);
+        velocityAdvectionMaterial.SetFloat("_CarryF", velocityAdvectionFactor);
         advectionMaterial.SetTexture("_U", u);
         advectionMaterial.SetFloat("_CarryF", qtyCarryFactory);
         diffuseMaterial.SetTexture("_U", u);
@@ -83,6 +88,8 @@ public class FluidSimulation : MonoBehaviour
         CommandBuffer commandBuffer= new CommandBuffer();
         commandBuffer.Blit(qty, temp, qtyInputMaterial);
         commandBuffer.Blit(temp, qty);
+        commandBuffer.Blit(u, temp, velocityAdvectionMaterial);
+        commandBuffer.Blit(temp, u);
         commandBuffer.Blit(qty, temp, advectionMaterial);
         commandBuffer.Blit(temp, qty);
 
@@ -142,6 +149,7 @@ public class FluidSimulation : MonoBehaviour
         Destroy(p);
 
         Destroy(qtyInputMaterial);
+        Destroy(velocityAdvectionMaterial);
         Destroy(advectionMaterial);
         Destroy(diffuseMaterial);
         Destroy(forceMaterial);
